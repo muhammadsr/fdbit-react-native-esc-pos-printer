@@ -408,7 +408,7 @@ class Printing {
   }
 
   textColumnsAsImage(
-    text: string,
+    text: string[],
     {
       color = 'EPOS2_COLOR_1',
       mode = 'EPOS2_MODE_MONO',
