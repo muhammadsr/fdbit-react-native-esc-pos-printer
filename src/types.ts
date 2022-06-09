@@ -192,6 +192,7 @@ export interface ImagePrintParams {
   halftone?: EposHalftone;
   brightness?: number;
   textSize?: number;
+  isRTL?: boolean;
 }
 
 export interface QRCodeParams {

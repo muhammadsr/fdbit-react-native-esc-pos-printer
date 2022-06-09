@@ -327,7 +327,7 @@ class Printing {
     assertNativeCommands([color, mode, halftone], 'image');
     assertImageSource(imageSource);
 
-    if (width < 1 || width > 65535) {
+    if (width && (width < 1 || width > 65535)) {
       throw new Error('The width of image should be from 1 to 65535');
     }
 
@@ -376,6 +376,8 @@ class Printing {
       halftone = 'EPOS2_HALFTONE_THRESHOLD',
       brightness = 0.1,
       textSize = 30.0,
+      width,
+      isRTL,
     }: ImagePrintParams
   ) {
     assertNativeCommands([color, mode, halftone], 'image');
@@ -397,6 +399,47 @@ class Printing {
         getNativeCommand(halftone),
         brightness,
         textSize,
+        width,
+        isRTL,
+      ],
+    ]);
+
+    return this;
+  }
+
+  textColumnsAsImage(
+    text: string,
+    {
+      color = 'EPOS2_COLOR_1',
+      mode = 'EPOS2_MODE_MONO',
+      halftone = 'EPOS2_HALFTONE_THRESHOLD',
+      brightness = 0.1,
+      textSize = 30.0,
+      width,
+      isRTL,
+    }: ImagePrintParams
+  ) {
+    assertNativeCommands([color, mode, halftone], 'image');
+
+    // if (width < 1 || width > 65535) {
+    //   throw new Error('The width of image should be from 1 to 65535');
+    // }
+
+    if (brightness < 0.1 || brightness > 10) {
+      throw new Error('The brightness of image should be from 0.1 to 10');
+    }
+
+    this._queue([
+      PRINTING_COMMANDS.COMMAND_ADD_TEXT_COLUMNS_AS_IMAGE,
+      [
+        text,
+        getNativeCommand(color),
+        getNativeCommand(mode),
+        getNativeCommand(halftone),
+        brightness,
+        textSize,
+        width,
+        isRTL,
       ],
     ]);
 

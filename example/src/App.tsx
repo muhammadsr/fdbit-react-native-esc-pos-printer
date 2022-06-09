@@ -4,12 +4,9 @@ import EscPosEncoder from 'esc-pos-encoder';
 
 import { StyleSheet, View, Button } from 'react-native';
 
-const { createCanvas } = require('canvas');
+// const { createCanvas } = require('canvas');
 
-import EscPosPrinter, {
-  getPrinterSeriesByName,
-  IPrinter,
-} from 'react-native-esc-pos-printer';
+import EscPosPrinter, { getPrinterSeriesByName, IPrinter } from '../../';
 import {} from 'react-native';
 import { base64Image } from './base64Image';
 export default function App() {
@@ -50,7 +47,7 @@ export default function App() {
             if (!init) {
               await EscPosPrinter.init({
                 target: printer.target,
-                seriesName: getPrinterSeriesByName(printer.name),
+                seriesName: getPrinterSeriesByName('EPOS2_TM_T20'),
                 language: 'EPOS2_LANG_EN',
               });
             }
@@ -72,22 +69,42 @@ export default function App() {
             if (!init) {
               await EscPosPrinter.init({
                 target: printer.target,
-                seriesName: getPrinterSeriesByName(printer.name),
+                seriesName: getPrinterSeriesByName('EPOS2_TM_T20'),
                 language: 'EPOS2_LANG_EN',
               });
               setInit(true);
             }
 
+            const width = 500;
             const printing = new EscPosPrinter.printing();
             await printing
               .initialize()
-              .align('right')
-              .textAsImage('محمد الردادي محمد', {
-                textSize: 30,
+              .align('center')
+              .textColumnsAsImage(['QTY', 'ITEM', 'TOTAL'], {
+                textSize: 12,
+                width,
+                isRTL: true,
               })
-              .text('Muhammad Alraddadi')
+              // .text('Muhammad Alraddadi Muhammad Alraddadi Alraddadi')
               .newline()
-              .textAsImage('Muhammad Alraddadi', {
+              // .textAsImage(['2x', 'Moshakkal Raheeb w/CHZ', '200.0'], {
+              //   textSize: 550,
+              //   width: 550,
+              // })
+              .textColumnsAsImage(['2x', 'مشكل رهيب مع الجبنه', '200.0'], {
+                textSize: 10,
+                width,
+                isRTL: true,
+              })
+              .textColumnsAsImage(['2x', 'مشكل من دون الجبنه', '200.0'], {
+                textSize: 10,
+                width,
+                isRTL: true,
+              })
+              .textColumnsAsImage(['', '  اضافات: سكر', ''], {
+                textSize: 9,
+                width,
+                isRTL: true,
               })
               .text('Muhammad Alraddadi')
               .newline(5)

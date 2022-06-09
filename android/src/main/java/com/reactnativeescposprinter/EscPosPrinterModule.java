@@ -14,6 +14,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,19 +36,22 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
+import android.graphics.Typeface;
+import android.os.Build;
 import android.util.Base64;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.Timer;
-import java.util.TimerTask;
+
 import com.facebook.react.bridge.WritableMap;
 import android.os.Handler;
 import java.util.concurrent.Callable;
 
 import com.facebook.react.bridge.ReadableMap;
 import android.util.Log;
+import android.view.View;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.net.URL;
 class PrintingCommands {
@@ -65,7 +69,8 @@ class PrintingCommands {
   public static final int COMMAND_ADD_QRCODE = 11;
   public static final int COMMAND_ADD_IMAGE = 12;
   public static final int COMMAND_ADD_PULSE = 13;
-  public static final int COMMAND_ADD_TEXT_AS_IMAGE = 14;
+  public static final int COMMAND_ADD_TEXT_COLUMNS_AS_IMAGE = 14;
+  public static final int COMMAND_ADD_TEXT_AS_IMAGE = 15;
 }
 
 @ReactModule(name = EscPosPrinterModule.NAME)
@@ -76,6 +81,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
   private final ReactApplicationContext reactContext;
   private String printerAddress = null;
   private Runnable monitor = null;
+  private Typeface typeface;
 
   ExecutorService tasksQueue = Executors.newSingleThreadExecutor();
   private Boolean mIsMonitoring = false;
@@ -139,6 +145,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     constants.put("COMMAND_ADD_CUT", PrintingCommands.COMMAND_ADD_CUT);
     constants.put("COMMAND_ADD_DATA", PrintingCommands.COMMAND_ADD_DATA);
     constants.put("COMMAND_ADD_PULSE", PrintingCommands.COMMAND_ADD_PULSE);
+    constants.put("COMMAND_ADD_TEXT_COLUMNS_AS_IMAGE", PrintingCommands.COMMAND_ADD_TEXT_COLUMNS_AS_IMAGE);
     constants.put("COMMAND_ADD_TEXT_AS_IMAGE", PrintingCommands.COMMAND_ADD_TEXT_AS_IMAGE);
     constants.put("EPOS2_ALIGN_LEFT", Printer.ALIGN_LEFT);
     constants.put("EPOS2_ALIGN_RIGHT", Printer.ALIGN_RIGHT);
@@ -213,6 +220,9 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
   @ReactMethod
   public void init(String target, int series, int language,Promise promise) {
     this.finalizeObject();
+    // Typeface
+    typeface = Typeface.createFromAsset(mContext.getAssets(), "fonts/MonospaceTypewriter.ttf");
+
     this.initializeObject(series, language, new MyCallbackInterface() {
       @Override
       public void onSuccess(String result) {
@@ -251,7 +261,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
   private void initializeObject(int series, int language,MyCallbackInterface callback) {
     try {
       mPrinter = new Printer(series, Printer.MODEL_ANK, mContext);
-      mPrinter.addTextLang(language);
+      mPrinter.addTextLang(language);
     }
     catch (Epos2Exception e) {
       int status = EscPosPrinterErrorManager.getErrorStatus(e);
@@ -654,6 +664,121 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
   }
 
 
+  private Pair<Pair<Integer, Integer>, Bitmap> textColumnsAsBitmap(String[] text, int textSize, int width, boolean isRTL) {
+    float letterSpacing = -0.05f;
+    String col1Val = text[0];
+    String col2Val = text[1];
+    String col3Val = text[2];
+
+    if (isRTL) {
+      col1Val = text[2];
+      col3Val = text[0];
+    }
+
+    int height = 50;
+//    int width = 550;
+
+    RelativeLayout relativeLayout = new RelativeLayout(mContext);
+    RelativeLayout.LayoutParams relLp = new RelativeLayout.LayoutParams(width, height);
+    relativeLayout.setLayoutParams(relLp);
+
+
+    // Left Text
+    TextView leftText = new TextView(mContext);
+    leftText.setText(col1Val);
+    leftText.setTextSize(textSize);
+    leftText.setTypeface(typeface);
+    leftText.setTextColor(Color.BLACK);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      leftText.setLetterSpacing(letterSpacing);
+    }
+
+    relativeLayout.addView(leftText);
+
+    // Left Text
+    TextView centerText = new TextView(mContext);
+    centerText.setTextSize(textSize);
+    centerText.setTextColor(Color.BLACK);
+    centerText.setText(col2Val);
+    centerText.setTypeface(typeface);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      centerText.setLetterSpacing(letterSpacing);
+    }
+    relativeLayout.addView(centerText);
+    relativeLayout.layout(0, 0, width, height);
+    relativeLayout.measure(width, height);
+    int space = (width * 130) / 550;
+    int centerX = space;
+    if (isRTL) centerX = width - space - centerText.getMeasuredWidth();
+    centerText.setX(centerX);
+//    RelativeLayout.LayoutParams clp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);;
+//    relativeLayout
+
+    // Right Text
+    TextView rightText = new TextView(mContext);
+    rightText.setText(col3Val);
+    rightText.setTextSize(10);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      rightText.setLetterSpacing(0.0f);
+    }
+    rightText.setTextColor(Color.BLACK);
+    rightText.setTypeface(typeface);
+    relativeLayout.addView(rightText);
+    relativeLayout.measure(width, height);
+    relativeLayout.layout(0, 0, width, height);
+    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)rightText.getLayoutParams();
+    rightText.setX(width - rightText.getWidth());
+    rightText.setLayoutParams(params);
+
+    // RTL
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isRTL) {
+      leftText.setTextDirection(View.TEXT_DIRECTION_RTL);
+      rightText.setTextDirection(View.TEXT_DIRECTION_RTL);
+      centerText.setTextDirection(View.TEXT_DIRECTION_RTL);
+    }
+
+    relativeLayout.setDrawingCacheEnabled(true);
+    relativeLayout.buildDrawingCache();
+
+    Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+    paint.setTextSize(new Float(textSize));
+//    paint.setColor(textColor);
+    paint.setTextAlign(Paint.Align.LEFT);
+    paint.setStrokeWidth(2);
+    Bitmap image = Bitmap.createBitmap(relativeLayout.getDrawingCache());
+    Canvas canvas = new Canvas(image);
+    canvas.drawBitmap(image, 0, 0, paint);
+    return new Pair(new Pair(width, height), image);
+  }
+
+  public void printTextColumnsAsImage(ReadableArray params) {
+    Log.i("MYAPP", "text: " + params);
+
+    try {
+      Object[] objectArr = params.getArray(0).toArrayList().toArray();
+      String[] textArr = Arrays.copyOf(objectArr, objectArr.length, String[].class);
+//      int imgWidth = params.getInt(1);
+      int color = params.getInt(1);
+      int mode = params.getInt(2);
+      int halftone = params.getInt(3);
+      double brightness = params.getDouble(4);
+      int textSize = params.getInt(5);
+      int width = (int) params.getDouble(6);
+      boolean isRTL = params.getBoolean(7);
+
+      Log.i("MYAPP", "text: " + textArr);
+      Log.i("MYAPP", "color: " + color);
+
+      Pair<Pair<Integer, Integer>, Bitmap> pair = textColumnsAsBitmap(textArr, textSize, width, isRTL);
+      Bitmap txtBitmap = pair.second;
+      Pair<Integer, Integer> widthHeight = pair.first;
+      handlePrintImage(txtBitmap, widthHeight.first, widthHeight.second, color, mode, halftone, brightness);
+    } catch (Exception e) {
+      Log.e("MYAPP", "exception", e);
+    }
+  }
+
+
   private void handleCommand(int command, ReadableArray params) throws Epos2Exception, IOException {
     switch (command) {
       case PrintingCommands.COMMAND_ADD_TEXT:
@@ -673,6 +798,10 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
         break;
       case PrintingCommands.COMMAND_ADD_ALIGN:
         mPrinter.addTextAlign(params.getInt(0));
+        break;
+
+      case PrintingCommands.COMMAND_ADD_TEXT_COLUMNS_AS_IMAGE:
+        printTextColumnsAsImage(params);
         break;
 
       case PrintingCommands.COMMAND_ADD_TEXT_AS_IMAGE:

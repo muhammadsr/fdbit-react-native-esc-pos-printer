@@ -29,7 +29,7 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "prepare": "bob build",
     "release": "release-it",
-    "example": "yarn --cwd example",
+    "example": "yarn --cwd example --ignore-version",
     "pods": "cd example && pod-install --quiet",
     "bootstrap": "yarn example && yarn && yarn pods",
     "postinstall": "node ./scripts/movelib.js"
@@ -39,7 +39,7 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/tr3v3r/react-native-esc-pos-printer",
+  "repository": "https://github.com/muhammadsr/fdbit-react-native-esc-pos-printer.git",
   "author": "Aliaksei Astafyeu <lochost40@gmail.com> (https://github.com/tr3v3r)",
   "license": "MIT",
   "bugs": {
