@@ -679,11 +679,11 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
       col3Val = text[0];
     }
 
-//    int height = 50;
+    int height = (50 * textSize)/ 12;
 //    int width = 550;
 
     RelativeLayout relativeLayout = new RelativeLayout(mContext);
-    RelativeLayout.LayoutParams relLp = new RelativeLayout.LayoutParams(width, RelativeLayout.LayoutParams.WRAP_CONTENT);
+    RelativeLayout.LayoutParams relLp = new RelativeLayout.LayoutParams(width, height);
     relativeLayout.setLayoutParams(relLp);
 
 
@@ -693,7 +693,6 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     leftText.setTextSize(textSize);
     leftText.setTypeface(typeface);
     leftText.setTextColor(Color.BLACK);
-    int leftHeight = leftText.getMeasuredHeight();
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       leftText.setLetterSpacing(letterSpacing);
     }
@@ -709,9 +708,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       centerText.setLetterSpacing(letterSpacing);
     }
-
-    int height = Math.max( centerText.getMeasuredHeight(), leftHeight);
-
+//    int height = centerText.getMeasuredHeight()
     relativeLayout.addView(centerText);
     relativeLayout.layout(0, 0, width, height);
     relativeLayout.measure(width, height);
@@ -725,14 +722,13 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     // Right Text
     TextView rightText = new TextView(mContext);
     rightText.setText(col3Val);
-    rightText.setTextSize(10);
+    rightText.setTextSize(textSize);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       rightText.setLetterSpacing(0.0f);
     }
     rightText.setTextColor(Color.BLACK);
     rightText.setTypeface(typeface);
     relativeLayout.addView(rightText);
-//    int heightRight = centerText.getMeasuredHeight();
     relativeLayout.measure(width, height);
     relativeLayout.layout(0, 0, width, height);
     RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)rightText.getLayoutParams();
