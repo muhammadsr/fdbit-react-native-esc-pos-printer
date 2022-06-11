@@ -729,9 +729,9 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     rightText.setTextColor(Color.BLACK);
     rightText.setTypeface(typeface);
     relativeLayout.addView(rightText);
-    int heightRight = centerText.getMeasuredHeight();
-    relativeLayout.measure(width, heightRight);
-    relativeLayout.layout(0, 0, width, heightRight);
+//    int heightRight = centerText.getMeasuredHeight();
+    relativeLayout.measure(width, heightCenter);
+    relativeLayout.layout(0, 0, width, heightCenter);
     RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)rightText.getLayoutParams();
     rightText.setX(width - rightText.getWidth());
     rightText.setLayoutParams(params);
@@ -754,7 +754,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     Bitmap image = Bitmap.createBitmap(relativeLayout.getDrawingCache());
     Canvas canvas = new Canvas(image);
     canvas.drawBitmap(image, 0, 0, paint);
-    return new Pair(new Pair(width, Math.max(heightRight, heightCenter)), image);
+    return new Pair(new Pair(width, heightCenter), image);
   }
 
   public void printTextColumnsAsImage(ReadableArray params) {
