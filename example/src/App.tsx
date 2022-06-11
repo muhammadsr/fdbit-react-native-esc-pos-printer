@@ -87,12 +87,19 @@ export default function App() {
               })
               // .text('Muhammad Alraddadi Muhammad Alraddadi Alraddadi')
               .newline()
+              // .image(
+              //   {
+              //     uri:
+              //       'https://raw.githubusercontent.com/tr3v3r/react-native-esc-pos-printer/main/ios/store.png',
+              //   },
+              //   { width: 75 }
+              // )
               // .textAsImage(['2x', 'Moshakkal Raheeb w/CHZ', '200.0'], {
               //   textSize: 550,
               //   width: 550,
               // })
               .textColumnsAsImage(['2x', 'مشكل رهيب مع الجبنه', '200.0'], {
-                textSize: 10,
+                textSize: 17,
                 width,
                 isRTL: true,
               })
