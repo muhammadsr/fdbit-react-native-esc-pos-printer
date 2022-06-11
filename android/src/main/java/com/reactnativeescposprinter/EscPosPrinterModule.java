@@ -693,6 +693,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     leftText.setTextSize(textSize);
     leftText.setTypeface(typeface);
     leftText.setTextColor(Color.BLACK);
+    int leftHeight = leftText.getMeasuredHeight();
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       leftText.setLetterSpacing(letterSpacing);
     }
@@ -708,10 +709,12 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       centerText.setLetterSpacing(letterSpacing);
     }
-    int heightCenter = centerText.getMeasuredHeight();
+
+    int height = Math.max( centerText.getMeasuredHeight();, leftHeight);
+
     relativeLayout.addView(centerText);
-    relativeLayout.layout(0, 0, width, heightCenter);
-    relativeLayout.measure(width, heightCenter);
+    relativeLayout.layout(0, 0, width, height);
+    relativeLayout.measure(width, height);
     int space = (width * 110) / 550;
     int centerX = space;
     if (isRTL) centerX = width - space - centerText.getMeasuredWidth();
@@ -730,8 +733,8 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     rightText.setTypeface(typeface);
     relativeLayout.addView(rightText);
 //    int heightRight = centerText.getMeasuredHeight();
-    relativeLayout.measure(width, heightCenter);
-    relativeLayout.layout(0, 0, width, heightCenter);
+    relativeLayout.measure(width, height);
+    relativeLayout.layout(0, 0, width, height);
     RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)rightText.getLayoutParams();
     rightText.setX(width - rightText.getWidth());
     rightText.setLayoutParams(params);
@@ -754,7 +757,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     Bitmap image = Bitmap.createBitmap(relativeLayout.getDrawingCache());
     Canvas canvas = new Canvas(image);
     canvas.drawBitmap(image, 0, 0, paint);
-    return new Pair(new Pair(width, heightCenter), image);
+    return new Pair(new Pair(width, height), image);
   }
 
   public void printTextColumnsAsImage(ReadableArray params) {
