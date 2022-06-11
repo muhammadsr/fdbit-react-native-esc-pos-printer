@@ -707,7 +707,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     relativeLayout.addView(centerText);
     relativeLayout.layout(0, 0, width, height);
     relativeLayout.measure(width, height);
-    int space = (width * 130) / 550;
+    int space = (width * 110) / 550;
     int centerX = space;
     if (isRTL) centerX = width - space - centerText.getMeasuredWidth();
     centerText.setX(centerX);
@@ -794,7 +794,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
         mPrinter.addTextStyle(Printer.FALSE, params.getInt(0), params.getInt(1), Printer.COLOR_1);
         break;
       case PrintingCommands.COMMAND_ADD_TEXT_SIZE:
-        mPrinter.addTextSize(params.getInt(0), params.getInt(1));
+        mPrinter.addTextSize(paams.getInt(0), params.getInt(1));
         break;
       case PrintingCommands.COMMAND_ADD_ALIGN:
         mPrinter.addTextAlign(params.getInt(0));
