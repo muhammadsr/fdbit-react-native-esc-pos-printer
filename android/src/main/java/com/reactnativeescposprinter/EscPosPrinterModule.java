@@ -81,7 +81,8 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
   private final ReactApplicationContext reactContext;
   private String printerAddress = null;
   private Runnable monitor = null;
-  private Typeface typeface;
+  private Typeface englishTypeface;
+  private Typeface arabicTypeface;
 
   ExecutorService tasksQueue = Executors.newSingleThreadExecutor();
   private Boolean mIsMonitoring = false;
@@ -221,7 +222,9 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
   public void init(String target, int series, int language,Promise promise) {
     this.finalizeObject();
     // Typeface
-    typeface = Typeface.createFromAsset(mContext.getAssets(), "fonts/MonospaceTypewriter.ttf");
+    englishTypeface = Typeface.createFromAsset(mContext.getAssets(), "fonts/MonospaceTypewriter.ttf");
+    arabicTypeface = Typeface.createFromAsset(mContext.getAssets(), "fonts/NotoSansArabic-Condensed.ttf");
+
 
     this.initializeObject(series, language, new MyCallbackInterface() {
       @Override
@@ -665,6 +668,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
 
 
   private Pair<Pair<Integer, Integer>, Bitmap> textColumnsAsBitmap(String[] text, int textSize, int width, boolean isRTL) {
+    Typeface typeface = isRTL ? arabicTypeface : englishTypeface;
     float letterSpacing = -0.05f;
     String col1Val = text[0];
     String col2Val = text[1];
