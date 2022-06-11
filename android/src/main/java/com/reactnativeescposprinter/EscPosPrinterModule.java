@@ -710,7 +710,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
       centerText.setLetterSpacing(letterSpacing);
     }
 
-    int height = Math.max( centerText.getMeasuredHeight();, leftHeight);
+    int height = Math.max( centerText.getMeasuredHeight(), leftHeight);
 
     relativeLayout.addView(centerText);
     relativeLayout.layout(0, 0, width, height);
