@@ -679,7 +679,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
       col3Val = text[0];
     }
 
-    int height = (50 * textSize)/ 12;
+    int height = (50 * textSize)/ 11;
 //    int width = 550;
 
     RelativeLayout relativeLayout = new RelativeLayout(mContext);

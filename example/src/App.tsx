@@ -98,11 +98,14 @@ export default function App() {
               //   textSize: 550,
               //   width: 550,
               // })
-              .textColumnsAsImage(['2x', 'مشكل رهيب مع الجبنه', '200.0'], {
-                textSize: 17,
-                width,
-                isRTL: true,
-              })
+              .textColumnsAsImage(
+                ['2x', 'همبرجر دجاج بالخس والطماط', '200.0'],
+                {
+                  textSize: 17,
+                  width,
+                  isRTL: true,
+                }
+              )
               .textColumnsAsImage(['2x', 'مشكل من دون الجبنه', '200.0'], {
                 textSize: 10,
                 width,
