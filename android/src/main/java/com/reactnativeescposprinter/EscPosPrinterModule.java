@@ -30,6 +30,7 @@ import com.epson.epos2.printer.PrinterSettingListener;
 import com.facebook.react.bridge.UiThreadUtil;
 
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -49,6 +50,8 @@ import java.util.concurrent.Callable;
 
 import com.facebook.react.bridge.ReadableMap;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -621,6 +624,16 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     return image;
   }
 
+  private int getTextHeight(String text, Float textSize) {
+    Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+    paint.setTextSize(new Float(textSize));
+    paint.setTextAlign(Paint.Align.LEFT);
+    paint.setStrokeWidth(1);
+    Rect textBounds = new Rect();
+    paint.getTextBounds(text, 0, text.length(), textBounds);
+    return textBounds.height();
+  }
+
   private Pair<Pair<Integer, Integer>, Bitmap> textAsBitmap(String text, double textSize, int textColor) {
     Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
     paint.setTextSize(new Float(textSize));
@@ -629,16 +642,10 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     paint.setStrokeWidth(1);
     Rect textBounds = new Rect();
     paint.getTextBounds(text, 0, text.length(), textBounds);
-//    float baseline = -paint.ascent(); // ascent() is negative
-//    int width = (int) (paint.measureText(text) + 0.5f); // round
-//    int height = (int) (baseline + paint.descent());
+
     Bitmap image = Bitmap.createBitmap(textBounds.width(), textBounds.height(), Bitmap.Config.ARGB_8888);
     Canvas canvas = new Canvas(image);
     canvas.drawText(text, -textBounds.left, -textBounds.top, paint);
-//    Paint paint2 = new Paint();
-//    paint2.setStyle(Paint.Style.FILL);
-//    canvas.drawRect(-500, 300, 500, -100, paint2);
-//    canvas.drawLine(0, textBounds.bottom + 23, textBounds.right, textBounds.bottom + 23, paint2);
     return new Pair(new Pair(textBounds.width(), textBounds.height()), image);
   }
 
@@ -666,6 +673,25 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     }
   }
 
+  private int getTextHeight(String text, int textSize) {
+    Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+    paint.setTextSize(new Float(textSize));
+    paint.setTextAlign(Paint.Align.LEFT);
+    paint.setStrokeWidth(1);
+    Rect textBounds = new Rect();
+    paint.getTextBounds(text, 0, text.length(), textBounds);
+    return textBounds.height();
+  }
+
+  private float dbToPixels(int dip) {
+    Resources r = mContext.getResources();
+    float px = TypedValue.applyDimension(
+      TypedValue.COMPLEX_UNIT_DIP,
+      dip,
+      r.getDisplayMetrics()
+    );
+    return px;
+  }
 
   private Pair<Pair<Integer, Integer>, Bitmap> textColumnsAsBitmap(String[] text, int textSize, int width, boolean isRTL) {
     Typeface typeface = isRTL ? arabicTypeface : englishTypeface;
@@ -679,18 +705,29 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
       col3Val = text[0];
     }
 
-    int height = (50 * textSize)/ 11;
-//    int width = 550;
+    int height1 = getTextHeight(col1Val, textSize);
+    int height2 = getTextHeight(col2Val, textSize);
+    int height3 = getTextHeight(col3Val, textSize);
+
+    double heightDbl = Math.max(height1, Math.max(height2, height3));
+    int height = (int) (heightDbl + (heightDbl * 0.4));
+    //(50 * textSize)/ 12;
+
+    Log.i("Printing", String.format("height1: %s, height1: %s, height1: %s, height: %s", height1, height2, height3, height));
 
     RelativeLayout relativeLayout = new RelativeLayout(mContext);
     RelativeLayout.LayoutParams relLp = new RelativeLayout.LayoutParams(width, height);
     relativeLayout.setLayoutParams(relLp);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+//      relativeLayout.setPaddingRelative(1, 5, 2, 1);
+    }
 
 
     // Left Text
     TextView leftText = new TextView(mContext);
     leftText.setText(col1Val);
-    leftText.setTextSize(textSize);
+    leftText.setGravity(Gravity.CENTER_VERTICAL);
+    leftText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
     leftText.setTypeface(typeface);
     leftText.setTextColor(Color.BLACK);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -701,7 +738,8 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
 
     // Left Text
     TextView centerText = new TextView(mContext);
-    centerText.setTextSize(textSize);
+    centerText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+    centerText.setGravity(Gravity.CENTER_VERTICAL);
     centerText.setTextColor(Color.BLACK);
     centerText.setText(col2Val);
     centerText.setTypeface(typeface);
@@ -722,12 +760,13 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     // Right Text
     TextView rightText = new TextView(mContext);
     rightText.setText(col3Val);
-    rightText.setTextSize(textSize);
+    rightText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       rightText.setLetterSpacing(0.0f);
     }
     rightText.setTextColor(Color.BLACK);
     rightText.setTypeface(typeface);
+    rightText.setGravity(Gravity.CENTER_VERTICAL);
     relativeLayout.addView(rightText);
     relativeLayout.measure(width, height);
     relativeLayout.layout(0, 0, width, height);
@@ -746,10 +785,10 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     relativeLayout.buildDrawingCache();
 
     Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
-    paint.setTextSize(new Float(textSize));
+//    paint.setTextSize(new Float(textSize));
 //    paint.setColor(textColor);
     paint.setTextAlign(Paint.Align.LEFT);
-    paint.setStrokeWidth(2);
+//    paint.setStrokeWidth(1);
     Bitmap image = Bitmap.createBitmap(relativeLayout.getDrawingCache());
     Canvas canvas = new Canvas(image);
     canvas.drawBitmap(image, 0, 0, paint);
@@ -762,7 +801,6 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     try {
       Object[] objectArr = params.getArray(0).toArrayList().toArray();
       String[] textArr = Arrays.copyOf(objectArr, objectArr.length, String[].class);
-//      int imgWidth = params.getInt(1);
       int color = params.getInt(1);
       int mode = params.getInt(2);
       int halftone = params.getInt(3);
@@ -782,7 +820,6 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
       Log.e("MYAPP", "exception", e);
     }
   }
-
 
   private void handleCommand(int command, ReadableArray params) throws Epos2Exception, IOException {
     switch (command) {
