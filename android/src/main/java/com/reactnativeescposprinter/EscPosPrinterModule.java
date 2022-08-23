@@ -667,7 +667,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
       Pair<Pair<Integer, Integer>, Bitmap> pair = textAsBitmap(text, textSize, Color.BLACK);
       Bitmap txtBitmap = pair.second;
       Pair<Integer, Integer> widthHeight = pair.first;
-      handlePrintImage(txtBitmap, widthHeight.first, widthHeight.second, color, mode, halftone, brightness);
+      handlePrintImage(txtBitmap, widthHeight.first, widthHeight.second, color, mode, halftone, brightness, true);
     } catch (Exception e) {
       Log.e("MYAPP", "exception", e);
     }
@@ -815,7 +815,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
       Pair<Pair<Integer, Integer>, Bitmap> pair = textColumnsAsBitmap(textArr, textSize, width, isRTL);
       Bitmap txtBitmap = pair.second;
       Pair<Integer, Integer> widthHeight = pair.first;
-      handlePrintImage(txtBitmap, widthHeight.first, widthHeight.second, color, mode, halftone, brightness);
+      handlePrintImage(txtBitmap, widthHeight.first, widthHeight.second, color, mode, halftone, brightness, true);
     } catch (Exception e) {
       Log.e("MYAPP", "exception", e);
     }
@@ -860,7 +860,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
         double brightness = params.getDouble(5);
         try {
           Bitmap imgBitmap = getBitmapFromSource(source);
-          handlePrintImage(imgBitmap, imgWidth, 0, color, mode, halftone, brightness);
+          handlePrintImage(imgBitmap, imgWidth, 0, color, mode, halftone, brightness, false);
         } catch(Exception e) {
           Log.e("MYAPP", "exception", e); // TODO: fallback printing
         }
@@ -874,7 +874,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
         Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
         int inputWidth = params.getInt(1);
 
-        handlePrintImage(bitmap, inputWidth, 0, Printer.COLOR_1, Printer.MODE_MONO, Printer.HALFTONE_DITHER, Printer.PARAM_DEFAULT);
+        handlePrintImage(bitmap, inputWidth, 0, Printer.COLOR_1, Printer.MODE_MONO, Printer.HALFTONE_DITHER, Printer.PARAM_DEFAULT, false);
         break;
 
       case PrintingCommands.COMMAND_ADD_IMAGE_ASSET:
@@ -886,7 +886,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
         Bitmap assetBitmap = BitmapFactory.decodeStream(inputStream);
         inputStream.close();
 
-        handlePrintImage(assetBitmap, width, 0, Printer.COLOR_1, Printer.MODE_MONO, Printer.HALFTONE_DITHER, Printer.PARAM_DEFAULT);
+        handlePrintImage(assetBitmap, width, 0, Printer.COLOR_1, Printer.MODE_MONO, Printer.HALFTONE_DITHER, Printer.PARAM_DEFAULT, false);
         break;
       case PrintingCommands.COMMAND_ADD_CUT:
         mPrinter.addCut(Printer.CUT_FEED);
@@ -910,17 +910,20 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     }
   }
 
-  private void handlePrintImage(Bitmap bitmap, int width, int height, int color, int mode, int halftone, double brightness) throws Epos2Exception {
-//    float aspectRatio = bitmap.getWidth() / (float) bitmap.getHeight();
-//    int newHeight = Math.round(width / aspectRatio);
-//    bitmap = Bitmap.createBitmap(bitmap,0, 0, width, newHeight);
+  private void handlePrintImage(Bitmap bitmap, int width, int height, int color, int mode, int halftone, double brightness, boolean isText) throws Epos2Exception {
+    int newHeight = height;
+    if (!isText) {
+      float aspectRatio = bitmap.getWidth() / (float) bitmap.getHeight();
+      newHeight = Math.round(width / aspectRatio);
+      bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, newHeight);
+    }
 
     mPrinter.addImage(
       bitmap,
       0,
       0,
       width,
-      height,
+      newHeight,
       color,
       mode,
       halftone,
