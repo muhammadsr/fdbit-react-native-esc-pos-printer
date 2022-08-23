@@ -1,6 +1,6 @@
 {
   "name": "fdbit-react-native-esc-pos-printer",
-  "version": "1.11.11",
+  "version": "1.11.12",
   "description": "test",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

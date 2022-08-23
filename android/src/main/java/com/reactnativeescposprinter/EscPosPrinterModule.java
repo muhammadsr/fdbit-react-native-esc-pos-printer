@@ -710,7 +710,7 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
     int height3 = getTextHeight(col3Val, textSize);
 
     double heightDbl = Math.max(height1, Math.max(height2, height3));
-    int height = (int) (heightDbl + (heightDbl * 0.4));
+    int height = (int) (heightDbl + (heightDbl * 0.55));
     //(50 * textSize)/ 12;
 
     Log.i("Printing", String.format("height1: %s, height1: %s, height1: %s, height: %s", height1, height2, height3, height));
