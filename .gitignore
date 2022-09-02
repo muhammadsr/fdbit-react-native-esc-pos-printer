@@ -62,5 +62,5 @@ lib/
 
 # printer ios SDK
 ios/PrinterSDK
-android/libs
+# android/libs
 android/src/main/jniLibs

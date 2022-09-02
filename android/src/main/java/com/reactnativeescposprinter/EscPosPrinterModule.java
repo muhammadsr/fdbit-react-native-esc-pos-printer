@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
+import com.epson.epos2.printer.Printer;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -20,7 +21,6 @@ import java.util.Map;
 
 import android.content.Context;
 
-import com.epson.epos2.printer.Printer;
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.Epos2CallbackCode;
 import com.epson.epos2.printer.ReceiveListener;
