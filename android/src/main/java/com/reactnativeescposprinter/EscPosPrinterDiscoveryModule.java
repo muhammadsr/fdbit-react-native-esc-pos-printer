@@ -15,6 +15,8 @@ import com.facebook.react.module.annotations.ReactModule;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeoutException;
+
 import android.content.Context;
 import android.os.Handler;
 
@@ -50,7 +52,8 @@ public class EscPosPrinterDiscoveryModule extends ReactContextBaseJavaModule imp
   private final ReactApplicationContext reactContext;
   private boolean mExtractUsbSerialNumber = false;
   private int mScanningTimeout = 5000; // Default to 5000 if the value is not passed.
-
+  final Thread.UncaughtExceptionHandler defaultUncaughtExceptionHandler =
+    Thread.getDefaultUncaughtExceptionHandler();
 
   private boolean mFindFirst = false;
   private MyCallbackInterface mDiscoveryCallback = null;
@@ -75,6 +78,15 @@ public class EscPosPrinterDiscoveryModule extends ReactContextBaseJavaModule imp
 
   public EscPosPrinterDiscoveryModule(ReactApplicationContext reactContext) {
     super(reactContext);
+    Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+      if (t.getName().equals("FinalizerWatchdogDaemon") && e instanceof TimeoutException) {
+        assert true; //ignore this
+      } else {
+        if (defaultUncaughtExceptionHandler != null) {
+          defaultUncaughtExceptionHandler.uncaughtException(t, e);
+        }
+      }
+    });
     this.reactContext = reactContext;
     mContext = reactContext;
     mPrinterList = new ArrayList<DeviceInfo>();
@@ -262,19 +274,9 @@ public class EscPosPrinterDiscoveryModule extends ReactContextBaseJavaModule imp
 
     defineSettingsFromParamsMap(paramsMap);
 
-    this.startDiscovery(new MyCallbackInterface() {
-      @Override
-      public void onDone(String result) {
-        promise.reject(result);
-      }
-    });
+    this.startDiscovery(result -> promise.reject(result));
 
-    this.performDiscovery(new MyCallbackInterface() {
-      @Override
-      public void onDone(String result) {
-        promise.resolve(result);
-      }
-    }, paramsMap);
+    this.performDiscovery(result -> promise.resolve(result), paramsMap);
   }
 
   private void defineSettingsFromParamsMap(ReadableMap paramsMap) {

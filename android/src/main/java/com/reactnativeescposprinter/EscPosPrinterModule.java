@@ -57,6 +57,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.net.URL;
+import java.util.concurrent.TimeoutException;
+
 class PrintingCommands {
   public static final int COMMAND_ADD_TEXT = 0;
   public static final int COMMAND_ADD_NEW_LINE = 1;
@@ -78,6 +80,9 @@ class PrintingCommands {
 
 @ReactModule(name = EscPosPrinterModule.NAME)
 public class EscPosPrinterModule extends ReactContextBaseJavaModule implements ReceiveListener {
+  final Thread.UncaughtExceptionHandler defaultUncaughtExceptionHandler =
+    Thread.getDefaultUncaughtExceptionHandler();
+
   private static final int DISCONNECT_INTERVAL = 500;
   private Context mContext;
   public static Printer  mPrinter = null;
@@ -98,6 +103,15 @@ public class EscPosPrinterModule extends ReactContextBaseJavaModule implements R
 
   public EscPosPrinterModule(ReactApplicationContext reactContext) {
     super(reactContext);
+    Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+      if (t.getName().equals("FinalizerWatchdogDaemon") && e instanceof TimeoutException) {
+        assert true; //ignore this
+      } else {
+        if (defaultUncaughtExceptionHandler != null) {
+          defaultUncaughtExceptionHandler.uncaughtException(t, e);
+        }
+      }
+    });
     mContext = reactContext;
     this.reactContext = reactContext;
   }
